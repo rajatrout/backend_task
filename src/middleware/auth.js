@@ -31,7 +31,7 @@ exports.authorization = async function(req, res, next) {
 
     if (teacherId) {
 
-        if (!valid.isValidObjectId(teacherId)) {
+        if (!mongoose.Types.ObjectId.isValid(teacherId)) {
             return res.status(400).send({ status: false, message: "Invalid teacherId." })
         }
 

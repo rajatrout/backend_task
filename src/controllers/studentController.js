@@ -1,11 +1,18 @@
 const studentModel = require('../models/studentModel');
-
+const mongoose = require('mongoose')
+const validObjectId = mongoose.Types.ObjectId.isValid
 
 const addStudent = async function(req,res){
     
     try{
         let teacherId = req.params.teacherId
+        if(!validObjectId(teacherId)){
+            return res.status(400).send({status:false, message:'Invalid TeacherId'})
+        }
 
+        if(Object.keys(req.body).length == 0){
+            return res.status(400).send({status:false, message:'Kindly Enter Any details.'})
+        }
         const {studentName, subjectName, marks} = req.body
 
         let student = await studentModel.findOne({studentName:studentName})
@@ -42,6 +49,10 @@ const getStudent = async function(req,res){
     try{
         const studentId = req.params.studentId
 
+        if(!validObjectId(studentId)){
+            return res.status(400).send({status:false, message:'Invalid TeacherId'})
+        }
+
         let student = await studentModel.findById(studentId)
 
         if(!student){
@@ -62,6 +73,15 @@ const updateStudent = async function(req,res){
     try{
 
         const studentId = req.params.studentId
+
+        if(!validObjectId(studentId)){
+            return res.status(400).send({status:false, message:'Invalid TeacherId'})
+        }
+
+        if(Object.keys(req.body).length == 0){
+            return res.status(400).send({status:false, message:'Kindly Enter Any details.'})
+        }
+
         const {studentName, subjectName, marks} = req.body
         let final={}
         if(studentName){
@@ -98,6 +118,10 @@ const deleteStudent = async function(req,res){
 try{
 
     const studentId = req.params.studentId
+
+    if(!validObjectId(studentId)){
+        return res.status(400).send({status:false, message:'Invalid TeacherId'})
+    }
 
     const student = await studentModel.findById(studentId)
 

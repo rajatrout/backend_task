@@ -3,11 +3,38 @@ const studentModel = require("../models/studentModel.js");
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+
+const isValidString = function(value) { //function to check entered data is valid or not
+    if (typeof value == 'undefined' || value == null) return false;
+    if (typeof value == 'string' && value.trim().length === 0) return false;
+    return true;
+}
+
 const createTeacher = async function(req,res){
 
 try{
 
+    if(Object.keys(req.body).length == 0){
+        return res.status(400).send({status:false, message:'Kindly Enter Any details.'})
+    }
+
     const {name, email, password} = req.body
+
+    if(!isValidString(name)){
+        return res.status(400).send({status:false, message:'Invalid Name'})
+    }
+
+    if(!isValidString(email)){
+        return res.status(400).send({status:false, message:'Invalid Email'})
+    }
+    const duplicateEmail = await teacherModel.findOne({email})
+    if(duplicateEmail){
+        return res.status(400).send({status:false, message:'Email already exists.'})
+    }
+
+    if(!isValidString(password)){
+        return res.status(400).send({status:false, message:'Invalid Password'})
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
@@ -15,6 +42,7 @@ try{
 
     const teacher = await teacherModel.create(req.body)
     return res.status(201).send({data:teacher })
+
 }catch(err){
     return res.status(500).send(err.message)
 }
@@ -22,9 +50,22 @@ try{
 
 
 const loginTeacher = async function(req,res){
+try{
+
+    if(Object.keys(req.body).length == 0){
+        return res.status(400).send({status:false, message:'Kindly Enter Any details.'})
+    }
+
     const {email, password} = req.body
 
+    if(!isValidString(email)){
+        return res.status(400).send({status: false, message: 'Invalid Email'})
+    }
+
     const teacher = await teacherModel.findOne({email:email})
+    if(!teacher){
+        return res.status(400).send({status:false, message:'Email not exists.'})
+    }
 
     let ans = await bcrypt.compare(password, teacher.password)
     console.log(ans)
@@ -50,6 +91,9 @@ const loginTeacher = async function(req,res){
             return res.status(401).send({ status: false, message: "Invalid password!" });
         }
     })
+}catch(err){
+    return res.status(500).send(err.message)
+}
 }
 
 module.exports.createTeacher = createTeacher
