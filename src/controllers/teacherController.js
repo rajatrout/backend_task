@@ -1,6 +1,7 @@
 const teacherModel = require("../models/teacherModel.js");
-const bcrypt = require('bcrypt');
 const studentModel = require("../models/studentModel.js");
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 const createTeacher = async function(req,res){
 
@@ -24,23 +25,26 @@ const loginTeacher = async function(req,res){
     const {email, password} = req.body
 
     const teacher = await teacherModel.findOne({email:email})
+
+    let ans = await bcrypt.compare(password, teacher.password)
+    console.log(ans)
  
     await bcrypt.compare(password, teacher.password, async function(err, result) {
 
         if (result) {
             let token = jwt.sign({
-                    userId: user._id.toString(),
+                    teacherId: teacher._id.toString(),
                     iat: Math.floor(Date.now() / 1000),
                     exp: Math.floor(Date.now() / 1000) + 50 * 60 * 60,
                     batch: "radon",
                     organisation: "functionUp"
                 },
-                "MeNeSunRa-radon"
+                "rajat"
             )
 
             res.setHeader("Authorization", token)
             let student = await studentModel.find({teacherId:teacher._id.toString()})
-            return res.status(200).send({student})
+            return res.status(200).send({teacher,student})
 
         } else {
             return res.status(401).send({ status: false, message: "Invalid password!" });
